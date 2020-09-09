@@ -13,3 +13,30 @@
 > 此文档还在完善中。如果你有好的想法，我将非常乐于倾听。
 
 ### 安装
+
+#### 1. 局部安装
+
+```shell
+$ npm install --save-dev plop
+```
+
+#### 2. 全局安装(可选，但为了避免权限问题引起的错误，推荐安装)
+
+```
+$ npm install -g plop
+```
+
+#### 3. 在项目根文件夹创建 plopfile.js
+
+```js
+module.exports = function (plop) {
+	// create your generators here
+	plop.setGenerator('basics', {
+		description: 'this is a skeleton plopfile',
+		prompts: [], // array of inquirer prompts
+		actions: []  // array of actions
+	});
+};
+```
+
+### 你的第一个 plop 文件
