@@ -171,13 +171,37 @@ module.exports = function (
 | setPrompt | String, InquirerPrompt || 使用 inquirer 注册一个自定义的 prompt 类型 ||
 | load | Array[String], Object, Object || 从其他的plopfile或npm模块加载 generators, helpers 或 partials |
 
+#### setHelper
 
+`setHelper` 等同于 handlebars 中的 `registerHelper` 方法。所以如果你很熟悉 [handlebars helpers](https://handlebarsjs.com/guide/expressions.html#helpers) 的话，你就已经知道它是如何工作的了。
 
+```
+module.exports = function (plop) {
+	plop.setHelper('upperCase', function (text) {
+		return text.toUpperCase();
+	});
 
+	// or in es6/es2015
+	plop.setHelper('upperCase', (txt) => txt.toUpperCase());
+};
+```
 
+#### setPartial
 
+`setPartial` 等同于 handlebars 中的 `registerPartial` 方法。所以如果你很熟悉 [handlebars partials](https://handlebarsjs.com/guide/expressions.html#partials) 的话，你就已经知道它是如何工作的了。
 
+```
+module.exports = function (plop) {
+	plop.setPartial('myTitlePartial', '<h1>{{titleCase name}}</h1>');
+	// used in template as {{> myTitlePartial }}
+};
+```
  
+#### setActionType
+
+`setActionType` 方法允许你创建你的能在 plopfile 中使用的自定义actions(类似于 `add` 或 `modify`)。下面这些是可高度复用的自定义 action 函数。
+
+
 
 
 
