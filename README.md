@@ -99,6 +99,82 @@ Plop 使用 `Inquirer` 这个库来捕获用户输入，你可以在 inquirer �
 
 > 如果你想要提供可绕过的第二个输入而不是第一个，你可以使用下划线 `_` 用于跳过不想绕过的项（例如 `plop component _ "input for second prompt"`）。
 
+Plop 为标准的 inquirer prompts 内置了绕过逻辑，但是你也可以通过其他方法为特殊的 prompt 提供特殊的自定义逻辑来处理用户输入。
+
+如果你曾经发布过第三方的 inquirer prompt 插件, 而且愿意为 plop 用户提供可开箱即用的绕过功能，你可以在这里看到相关的内容。
+
+#### 绕过 Prompts（通过名称的方式）
+
+你也可以通过名称来绕过 prompt, 方式是使用 `--`, 然后为每一个你想要绕过的 prompt 提供参数。以下是示例：
+
+##### 绕过的示例
+
+```shell
+## Bypassing both prompt 1 and 2
+$ plop component "my component" react
+$ plop component -- --name "my component" --type react
+
+## Bypassing only prompt 2 (will be prompted for name)
+$ plop component _ react
+$ plop component -- --type react
+```
+
+#### 强制运行 generator
+
+在默认状态下，当发生某些异常时，Plop actions会通过触发失败的方式来保证你的文件安全，最典型的示例是禁止 `add` action 去覆盖一个已经存在的文件。Plop actions individually(这里暂时不知道怎么翻译) 支持 `force` 属性，你也可以在终端中使用 `--force` 标识。使用 `--force` 标识代表你想要强制执行所有的 action。
+
+### 为什么要使用 Generator?
+
+因为当你想要从你的代码独立创建你的模版文件时，你往往会付出很多不必要的时间和精力。
+
+因为它平均可以帮你的团队（或你自己）从创建每一个route, component, controller, helper, test, view等等文件时省下5-15分钟。
+
+因为上下文切换是昂贵的，而且节省时间远不是自动化工作流的唯一优点。
+
+## Plopfile Api
+
+Plopfile api 是 `plop` 对象下暴露出的一系列方法。通常来说, `setGenerator` 方法可以帮你完成大部分的工作，但这一部分的文档帮你列出了其他可能帮到你的方法。
+
+### TypeScript 声明
+
+plop 内置了 TypeScript 声明。不管你是不是通过 TypeScript 书写 Plop 文件，许多编辑器都可以通过内置的 TypeScript 声明提供语法提示。
+
+```js
+// plopfile.ts
+import {NodePlopAPI} from 'plop';
+
+export default function (plop: NodePlopAPI) {
+  // plop generator code
+};
+```
+
+```js
+// plopfile.js
+module.exports = function (
+	/** @type {import('plop').NodePlopAPI} */
+	plop
+) {
+	// plop generator code
+};
+```
+
+### 常用方法
+
+下面是一些你在创建 plop 文件时会经常用到的方法。其他常用于内部的方法在 other methods 部分列出。
+
+| 方法 | 参数 | 返回值 | 描述 |
+| --- | ---  | ---  | ---  |
+| setGenerator | String, GeneratorConfig | GeneratorConfig | 创建一个 generator |
+| setHelper | String, Function |  | 创建 handlebars helper |
+| setPartial | String, String || setup a handlebars partial |
+| setActionType | String, CustomAction | | 注册一个自定义的 action 类型 |
+| setPrompt | String, InquirerPrompt || 使用 inquirer 注册一个自定义的 prompt 类型 ||
+| load | Array[String], Object, Object || 从其他的plopfile或npm模块加载 generators, helpers 或 partials |
+
+
+
+
+
 
 
  
