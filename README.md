@@ -40,3 +40,81 @@ module.exports = function (plop) {
 ```
 
 ### 你的第一个 plop 文件
+
+一个 plop 文件就是一个简单的 node 模块，它导出一个函数，这个函数接收一个 plop 对象作为第一个参数。
+
+```js
+module.exports = function (plop) {};
+```
+
+一个 plop 对象暴露一个包含 `setGenerator(name, config)` 函数的 plop api。`setGenerator` 用于创建一个生成器(`generator`)。当 plop 在当前文件夹或子文件夹的终端中运行时，这些 `generator` 将会以列表的形式被展示在终端中。
+
+让我们看看一个简单的 generator 长什么样子吧：
+
+```js
+module.exports = function (plop) {
+	// controller generator
+	plop.setGenerator('controller', {
+		description: 'application controller logic',
+		prompts: [{
+			type: 'input',
+			name: 'name',
+			message: 'controller name please'
+		}],
+		actions: [{
+			type: 'add',
+			path: 'src/{{name}}.js',
+			templateFile: 'plop-templates/controller.hbs'
+		}]
+	});
+};
+```
+
+按照如上代码，我们创建了一个名为 `controller` 的 `generator`，它会在被执行时发出一个询问，并创建一个文件。你可以尽情地扩展它，让它发出任何数量的询问，创建任何数量的文件。此外，我们还可以使用其他的 actions 来更改我们的代码库。
+
+### 使用 Prompts
+
+Plop 使用 `Inquirer` 这个库来捕获用户输入，你可以在 inquirer 官网上找到所有的 prompts 类型。
+
+#### CLI 用法
+
+只要你安装了 Plop 并且创建了一个 generator, 你就可以在终端中运行 plop 了。 当你单独运行 plop 命令时，你将会看到一个可供选择的 generator 列表，你也可以直接运行 `plop [generatorName]` 直接触发 generator。如果你没有全局安装 plop，那么你需要创建一个 npm script 来帮助你运行 plop。
+
+```json
+// package.json
+{
+    ...,
+    "scripts": {
+        "plop": "plop"
+    },
+    ...
+}
+```
+
+#### 绕过 Prompts
+
+当你深入地了解一个项目(和它的 generators)时，你可能想要为 prompts 提供一些预置的答案。例如，如果我有一个 generator 用于生成组件，它有一个 prompt, 我可以通过 `plop component "some component name"` 运行 generator, 它会立马执行，就好像我在 prompt 中键入了 "some component name"。如果这个 generator 有第二个 prompt, 同样，第二个被键入的值就会被填入第二个 prompt 中。
+
+所有类似于 `confirm` 或 `list` 等的 prompts 应该都是语义化的。例如所有用于确认的 prmopt 中，输入 "Y", "yes", "t" 或者 "true" 的结果都应该是 true。你可以通过他们的 value, index, key, name 来从列表中选择 item, Checkbox 类型的 prompt 可以通过接收以符号分隔的多个值以支持多行选择。
+
+> 如果你想要提供可绕过的第二个输入而不是第一个，你可以使用下划线 `_` 用于跳过不想绕过的项（例如 `plop component _ "input for second prompt"`）。
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
