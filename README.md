@@ -175,7 +175,7 @@ module.exports = function (
 
 `setHelper` 等同于 handlebars 中的 `registerHelper` 方法。所以如果你很熟悉 [handlebars helpers](https://handlebarsjs.com/guide/expressions.html#helpers) 的话，你就已经知道它是如何工作的了。
 
-```
+```js
 module.exports = function (plop) {
 	plop.setHelper('upperCase', function (text) {
 		return text.toUpperCase();
@@ -190,7 +190,7 @@ module.exports = function (plop) {
 
 `setPartial` 等同于 handlebars 中的 `registerPartial` 方法。所以如果你很熟悉 [handlebars partials](https://handlebarsjs.com/guide/expressions.html#partials) 的话，你就已经知道它是如何工作的了。
 
-```
+```js
 module.exports = function (plop) {
 	plop.setPartial('myTitlePartial', '<h1>{{titleCase name}}</h1>');
 	// used in template as {{> myTitlePartial }}
