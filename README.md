@@ -374,9 +374,33 @@ config 对象需要包含 `prompts` 和 `actions` (`description`可选)。 promp
 
 #### Append
 
-`append` action
+`append` action 一般用于 `modify` 下的子操作，它用于在文件的特定位置追加数据。
 
+| 属性 | 数据类型 | 默认值 | 说明 |
+| --- |  ---  | --- |  ---  |
+| path | String |  | handlebars 模版，需要被修改的文件路径 |
+| pattern | RegExp, String |  | 用于匹配 append 操作的文本位置 |
+| unique | Boolean | `true` | whether identical entries should be removed(这一段不太理解，相同入口是否需要被移除？) |
+| separator | String | `new line` | 分隔入口的值 |
+| template | String |  | 用于入口的 handlebars 模版 |
+| templateFile | String |  | 一个包含了 `template` 的文件路径 |
+| data | Object | `{}` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| abortOnFail | Boolean | `false` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
 
+#### 自定义(Action 函数)
+
+`Add` 和 `modify` actions 几乎在 plop 可以处理的场景都能大展身手。但是 plop 也为 node或js专家提供了 action 的自定义功能。一个自定义的 action 函是一个在 actions 数组中可供使用的函数。
+
+- 自定义 action 函数被 plop 以与 CustomAction 函数签名相同的方式被执行。
+- Plop 会等待自定义 action 执行完毕之后再执行下一个 action。
+- action 函数必须要通过返回值告诉 plop 执行了什么过程。如果你返回了一个 `Promise`, 在 promise resolve之前，我们不会开始执行其他的 actions。如果你返回了一个字符串信息，plop 就会知道 action 已经执行完毕, 我们就会在 action 状态中报告信息。
+- 一个自定义的 action 会在 promise 变为 rejected 状态或 function 抛出错误时执行失败。
+
+#### Comments
+
+通过在 action config 对象的位置添加一个字符串，Comments 可以被添加到 action 中。它用于在 plop 读取到它们时将对应的字符串打印在屏幕上，自身没有任何功能。
+
+### Built-in helpers
 
 
 
