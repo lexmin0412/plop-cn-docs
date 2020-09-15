@@ -402,6 +402,204 @@ config 对象需要包含 `prompts` 和 `actions` (`description`可选)。 promp
 
 ### Built-in helpers
 
+plop 已经内置了一些实用的 helper。 他们大多数是大小写转换工具, 这里完整地列出了所有的helper。
+
+#### Case Modifiers(大小写转换工具)
+
+以下分别是对应的方法和转换后的格式示例：
+
+- camelCase(驼峰命名): changeFormatToThis
+- snakeCase(下划线分隔): change_format_to_this
+- dashCase/kebabCase(短横线分隔): change-format-to-this
+- dotCase(点分隔): change.format.to.this
+- pathCase(斜杠分隔): change/format/to/this
+- properCase/pascalCase(帕斯卡命名(每个单词的首字母大写)): ChangeFormatToThis
+- lowerCase(转换为全小写): change format to this
+- sentenceCase(首字母大写,句末添加逗号): Change format to this,
+- constantCase(常量形式，全大写，使用下划线分隔): CHANGE_FORMAT_TO_THIS
+- titleCase(标题形式): Change Format To This
+
+#### 其他 helper
+
+- pkg: 从 plopfile 同级文件夹下的 package.json 文件中查找一个属性。
+
+### 更进一步
+
+在一些基础的 generator 中，以上的内容已经足够使用了。但如果你想使用 plop 更进一步完成更高级的功能，请阅读以下内容吧。
+
+#### 使用动态的 Actions 数组
+
+如果有需要的话，`GeneratorConfig` 中的 actions 属性可以是一个函数，它接收 prompts 数组的答案作为参数，并且返回 actions 数组。
+
+基于这个功能，你可以根据用户输入的 promts 答案来动态执行 actions。
+
+```js
+module.exports = function (plop) {
+	plop.setGenerator('test', {
+		prompts: [{
+			type: 'confirm',
+			name: 'wantTacos',
+			message: 'Do you want tacos?'
+		}],
+		actions: function(data) {
+			var actions = [];
+
+			if(data.wantTacos) {
+				actions.push({
+					type: 'add',
+					path: 'folder/{{dashCase name}}.txt',
+					templateFile: 'templates/tacos.txt'
+				});
+			} else {
+				actions.push({
+					type: 'add',
+					path: 'folder/{{dashCase name}}.txt',
+					templateFile: 'templates/burritos.txt'
+				});
+			}
+
+			return actions;
+		}
+	});
+};
+```
+
+#### 第三方的 prompt 绕过功能
+
+如果你已经编写了一个 inquirer prompt 插件并且想要支持 plop 的绕过功能，实现它比你想的简单多了。你的 prompt 暴露出的插件对象需要包含一个 `bypass` 函数，它会被 plop 执行，接收用户输入作为第一个参数，prompt 配置对象作为第二个参数。这个函数的返回值会被追加到 prompt 的答案的 data 对象中。
+
+```js
+// My confirmation inquirer plugin
+module.exports = MyConfirmPluginConstructor;
+function MyConfirmPluginConstructor() {
+	// ...your main plugin code
+	this.bypass = (rawValue, promptConfig) => {
+		const lowerVal = rawValue.toString().toLowerCase();
+		const trueValues = ['t', 'true', 'y', 'yes'];
+		const falseValues = ['f', 'false', 'n', 'no'];
+		if (trueValues.includes(lowerVal)) return true;
+		if (falseValues.includes(lowerVal)) return false;
+		throw Error(`"${rawValue}" is not a valid ${promptConfig.type} value`);
+	};
+	return this;
+}
+```
+
+> 在以上的例子中，bypass 函数接收用户输入并把它转换为一个布尔值，这个布尔值会作为 prompt 的答案。
+
+#### 在你的 plopfile 中添加 bypass 支持
+
+如果你正在使用的第三方 prompt 插件不支持 bypass, 你可以在你的 plopfile 文件中的 prompts 配置对象之前添加 `bypass` 函数，plop 会使用它来处理 prompt 的 bypass 数据。
+
+### 封装 Plop
+
+Plop提供了许多开箱即用的强大功能。事实上，你甚至可以把 plop 封装到你自己的脚手架项目中。你只需要一个 `plopfile.js`, 一个 `pacakge.json` 和一个供饮用的模版。
+
+你的 `index.js` 文件看起来应该像下面这样：
+
+```js
+#!/usr/bin/env node
+const path = require('path');
+const args = process.argv.slice(2);
+const {Plop, run} = require('plop');
+const argv = require('minimist')(args);
+
+Plop.launch({
+  cwd: argv.cwd,
+  // In order for `plop` to always pick up the `plopfile.js` despite the CWD, you must use `__dirname`
+  configPath: path.join(__dirname, 'plopfile.js'),
+  require: argv.require,
+  completion: argv.completion
+// This will merge the `plop` argv and the generator argv.
+// This means that you don't need to use `--` anymore
+}, env => run(env, undefined, true));
+```
+
+> 注意：如果你选择使用 `env => run(env, undefined, true))`, 你可能会在使用 generator 参数传递时遇到命令行参数合并问题。
+
+> 如果你想要避免这种行为，让你的插件表现的像 plop(在传递具名参数给generator前需要加上 `--`)，只需要把 `env => {}` 箭头函数替换成 `run` 即可。
+
+```
+Plop.launch({}, run);
+```
+
+然后，你的 `package.json` 文件看起来应该像下面这样：
+
+```json
+{
+  "name": "create-your-name-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "plop",
+  },
+  "bin": {
+    "create-your-name-app": "./index.js"
+  },
+  "preferGlobal": true,
+  "dependencies": {
+    "plop": "^2.6.0"
+  }
+}
+```
+
+#### 给你的封装函数设置base目标路径
+
+当你封装 plop 时，你可能想要在执行你的CLI时有一个基于当前工作目录的目标路径，你可以像下面这样配置 `dest` 基础路径：
+
+```js
+Plop.launch({
+	// config like above
+}, env => {
+	const options = {
+		...env,
+		dest: process.cwd() // this will make the destination path to be based on the cwd when calling the wrapper
+	}
+	return run(options, undefined, true)
+})
+```
+
+#### 添加一些实用的 actions
+
+许多脚手架工具会帮你执行一些简单的工作，比如在模版创建之后立即执行 `git init` 或 `npm install`。
+
+我们想过提供这些功能，但是也想维持核心的actions在一定数量范围内。同样地，在[our Awesome Plop list](https://github.com/plopjs/awesome-plop)中，我们维护了一个在 plop 中扩展这些功能的插件列表。在这里，你可以按需选用你想要的插件，并且可以自己开发，然后让你自己开发的库成为这个列表中的一员。
+
+#### 更多的自定义功能
+
+虽然 plop 为脚手架工具提供了强大的自定义能力，仍然可能会有一些使用场景，例如你可能想要CLI之外的更高级的控制能力，同时又能利用模版生成代码。
+
+幸运地，`[node-plop](https://github.com/plopjs/node-plop/)` 可能是你的最佳选择！plop 脚手架本身就是基于它来创建的，而且易于在脚手架中扩展其他功能。需要注意的是， node-plop 的文档可能不是特别完善。
+
+> 我们注意到 `node-plop` 枯燥的文档可能不是一个令人激动的点，而是一个警告。如果你想要给这个项目贡献文档，当然是热烈欢迎滴！我们永远都欢迎并且鼓励大家的贡献！
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
