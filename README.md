@@ -201,6 +201,140 @@ module.exports = function (plop) {
 
 `setActionType` 方法允许你创建你的能在 plopfile 中使用的自定义actions(类似于 `add` 或 `modify`)。下面这些是可高度复用的自定义 action 函数。
 
+##### 函数形式的自定义Action
+
+|参数|类型|描述|
+|---|---|---|
+|answers|Object|generator prompts的答案|
+|config|[ActionConfig](ActionConfig)|generator action的配置对象|
+|plop|[PlopfileApi](PlopfileApi)|用于action所在的plop文件的plop api|
+
+```js
+module.exports = function (plop) {
+
+	plop.setActionType('doTheThing', function (answers, config, plop) {
+		// do something
+		doSomething(config.configProp);
+		// if something went wrong
+		throw 'error message';
+		// otherwise
+		return 'success status message';
+	});
+
+	// or do async things inside of an action
+	plop.setActionType('doTheAsyncThing', function (answers, config, plop) {
+		// do something
+		return new Promise((resolve, reject) => {
+			if (success) {
+				resolve('success status message');
+			} else {
+				reject('error message');
+			}
+		});
+	});
+
+	// use the custom action
+	plop.setGenerator('test', {
+		prompts: [],
+		actions: [{
+			type: 'doTheThing',
+			configProp: 'available from the config param'
+		}, {
+			type: 'doTheAsyncThing',
+			speed: 'slow'
+		}]
+	});
+};
+```
+
+#### setPrompt
+
+[Inquirer](Inquirer) 提供了许多可开箱即用的 prompts，但它仍然允许开发者自行开发 prompt 插件。如果你想要使用一个 prompt 插件，你可以使用 `setPrompt` 去注册它。访问 [Inquirer documentation for registering prompts](https://github.com/SBoudrias/Inquirer.js#inquirerregisterpromptname-prompt) 查看详情, 你也可以在 [plop community driven list of custom prompts](https://github.com/plopjs/plop/blob/master/inquirer-prompts.md) 查看到相关的内容。
+
+```js
+const promptDirectory = require('inquirer-directory');
+module.exports = function (plop) {
+	plop.setPrompt('directory', promptDirectory);
+	plop.setGenerator('test', {
+		prompts: [{
+			type: 'directory',
+			...
+		}]
+	});
+};
+```
+
+#### setGenerator
+
+config 对象需要包含 `prompts` 和 `actions` (`description`可选)。 prompts 数组会被传递给 [inquirer](https://github.com/SBoudrias/Inquirer.js/#objects). `actions` 数组是一个待执行的 actions 列表。
+
+##### `GeneratorConfig` 接口
+
+|  属性  |  数据类型  |  默认值  |  描述  |
+|---|---|---|---|
+|  description  |  [String]  |    |  给 generator 提供一个简短的描述  |
+|  prompts  |   Array[[InquirerQuestion](https://github.com/SBoudrias/Inquirer.js/#question)]  |    |  询问用户的问题列表  |
+|  actions |  Array[[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig)]  |    |  用于执行的 action 数组  |
+
+> 如果你的 actions 数组是动态变化的，请查看 [使用动态变化的actions列表](https://github.com/plopjs/plop#using-a-dynamic-actions-array)。
+
+##### `ActionConfig` 接口
+
+以下的属性列表是 plop 内部处理的标准属性。其他属性需要根据 action 类型动态传入。查看 [built-in actions](https://github.com/plopjs/plop#built-in-actions) 了解详情。
+
+|  属性  |  数据类型  |  默认值  |   描述   |
+|   ---  |   ---   |   ---   |   ---   |
+|  type  |   String   |     |   action 的类型(包括 [add](https://github.com/plopjs/plop#add), [modify](https://github.com/plopjs/plop#modify), [addMany](https://github.com/plopjs/plop#addmany) |
+|  force  |   Boolean  |    `false`     |  [强制执行](https://github.com/plopjs/plop#running-a-generator-forcefully)(不同的 action 类型会对应不同的逻辑)  |
+|  data  |  Object/Function  |  `{}`  |  指定 action 被执行时需要混入prompts答案的数据  |
+|  abortOnFail  |  Boolean  |  `true`  |  当一个 action 由于某种原因执行失败时停止执行之后的所有 action  |
+|  skip  |  Function  |    |  一个用于指定当前 action是否需要被执行的函数  |
+
+> 任何 `ActionConfig` 上的 `data` 属性都可以是一个函数，这个函数返回一个对象或者函数，这个被返回的函数应该返回一个 Promise，这个 Promise 应该 resolve 一个对象。
+
+> 任何 `ActionConfig` 上的 `skip` 函数都是可选的，如果这个 action 需要被跳过，那么 skip 函数需要返回一个字符串，这个字符串就是这个 action 需要被跳过的原因。
+
+> Action 除了可以是一个对象之外，也可以是[一个函数](https://github.com/plopjs/plop#custom-action-function)。
+
+### 其他方法
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
