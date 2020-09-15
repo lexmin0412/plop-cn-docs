@@ -298,9 +298,83 @@ config 对象需要包含 `prompts` 和 `actions` (`description`可选)。 promp
 
 ### 其他方法
 
+| 方法 | 参数 | 返回值 | 描述 |
+| ---  |   ---  |   ---   |---|
+| getHelper | String | Function | 获取 helper 工具函数 |
+| getHelperList |  |  Array[String]  | 获取 helper 工具函数的名称列表 |
+| getPartial | String | String | 通过名称获取一个 handlebars partial |
+| getPartialList |  | Array[String] | 获取 partial 名称列表 |
+| getActionType | String | [CustomAction](https://github.com/plopjs/plop#functionsignature-custom-action) | 通过名称获取一个 action 类型 |
+| getActionTypeList | Array[String] |  | 获取 actionType 的名称列表 |
+| setWelcomeMessage | String |    |  自定义运行 plop 时询问选择generator的欢迎语  |
+| getGenerator | String | [GeneratorConfig](https://github.com/plopjs/plop#interface-generatorconfig) | 通过名称获取[GeneratorConfig](https://github.com/plopjs/plop#interface-generatorconfig) |
+| getGeneratorList |  | Array[Object] | 获取一个包含 genertor 名称和描述信息的对象数组 |
+| setPlopfilePath | String |  | 设置用于plop内部定位资源文件(如模版文件)的 `plopfilePath` 值 |
+| getPlopfilePath | String |  | 返回正在使用的 plopfile 的绝对路径 |
+| getDestBasePath |  | String | 返回用于创建文件的base路径 |
+| setDefaultInclude | Object | Object | 用于其他 plopfile 通过 `plop.load()` 方法调用当前 plopfile 时设置当前 plopfile 的默认配置 |
+| getDefaultInclude | String | Object | 获取其他 plopfile 通过 `plop.load()` 方法调用当前 plopfile 时使用的当前 plopfile 的默认配置 |
+| renderString | String, Object | String | 使用第二个参数作为data, 通过handlebars模版生成器执行第一个参数，返回渲渲染结果字符串模版 |
 
+### `Built-In Actions`
 
+在 [GeneratorConfig](https://github.com/plopjs/plop#interface-generatorconfig) 中，有几种可供使用的 built-in action。你可以执行 action 类型和 action 使用的模版(所有的路径都基于 plopfile 的路径)。
 
+> `Add`, `AddMany`, `Modify` action 有一个可选的 `transform` 方法，这个方法可以用于在写入到磁盘之前对模版结果做一些转换操作。`transform` 函数接收模版结果或文件内容(字符串形式) 和 action data 作为参数，它必须返回一个字符串或一个 resolve 字符串的 Promise。
+
+#### Add
+
+你已经猜到了，`add` action 可以用于往你的项目中新增一个文件。path 属性是一个 handlebars 模版, 它被用于根据名称创建一个文件。文件的内容取决于 `template` 或 `templateFile` 属性。
+
+| 属性 | 数据类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| path | String |  | 一个 handlebars 模版，它是需要被创建的文件路径 |
+| template | String |  | 一个用于创建新文件的 handlebars 模版 |
+| templateFile |  String  |  |  一个包含模版内容的文件路径 |
+| skipIfExists | Boolean | false | 如果这个属性存在，则跳过文件 |
+| transform | Function |  | 一个可选的 Function, 用于在写入文件到磁盘之前对模版结果做转换操作 |
+| skip | Function |  | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| force | Function | `false` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| data | Object | `{}` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| abortOnFail | Boolean | `true` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+
+#### AddMany
+
+通过 `AddMany` 方法，你可以在你的项目中使用单个 action 创建多个文件。`destination` 属性是一个 handlebars 模版，它被用于指定生成文件之后的存放路径。`base` 属性用于判断创建文件时模版路径的哪一部分需要被省略。如果你想要新增的文件有独特的文件名称，glob 可以在文件/文件夹名中使用 handlebars 语法(**这里有一段没有翻译出来，需要斟酌**)。
+
+| 属性 | 数据类型 | 默认值 | 说明 |
+| --- |  ---  | --- |  ---  |
+| destination | String |  | 一个 handlebars 模版，用于存放新建文件的目录 |
+| base | String |  | 添加新文件到 destination 时，path 中需要被移除的部分 |
+| templateFiles | [Glob](https://github.com/sindresorhus/globby#globbing-patterns) | 添加多个文件的 glob 表达式 |
+| stripExtensions | [String] | ['hbs'] | 当 `templateFiles` 文件被添加到 `destination` 时文件名中需要去除的扩展名 |
+| globOptions | [Object](https://github.com/sindresorhus/globby#options) |  | 改变匹配模版文件添加方式的 glob 选项 |
+| verbose | Boolean | `true` | 是否打印所有新建的文件path |
+| transform | Function |  | 模版结果被写入磁盘之前的[一个可选的转换函数](https://github.com/plopjs/plop#built-in-actions) |
+| skip | Function |  | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| skipIfExists | Boolean | `false` | 继承自[Add](https://github.com/plopjs/plop#add)(如果文件已存在则跳过) |
+| force | Boolean | `false` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig)(如果文件存在则会覆盖原有的文件) |
+| data | Object | `{}` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| abortOnFail | Boolean | `false` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+
+#### Modify
+
+`modify` action 有两种使用方式。你可以使用 `pattern` 属性来查找/替换 `path` 字段指明的文件中的文本，也可以使用 `transform` 方法来转换文件内容。`pattern` 和 `transform` 可以同时使用(`transform`方法会在最后执行)。更多关于 `modify` 方法的使用和细节可以查看 [example文件夹](https://github.com/plopjs/plop/tree/master/example)。
+
+| 属性 | 数据类型 | 默认值 | 说明 |
+| --- |  ---  | --- |  ---  |
+| path | String |  | handlebars 模版，需要被修改的文件路径 |
+| pattern | RegExp | end‑of‑file | 用于匹配需要替换的文本的正则表达式 |
+| template | String |  | pattern 匹配到的需要替换的handlebars 模版，capture groups are available as $1, $2, etc(缺失)。 |
+| templateFile | String |  | 一个包含了 `template` 的文件路径 |
+| transform | Function |  | 模版结果被写入磁盘之前的[一个可选的转换函数](https://github.com/plopjs/plop#built-in-actions) |
+| skip | Function |  | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| data | Object | `{}` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+| abortOnFail | Boolean | `false` | 继承自[ActionConfig](https://github.com/plopjs/plop#interface-actionconfig) |
+
+#### Append
+
+`append` action
 
 
 
