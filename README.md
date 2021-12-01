@@ -8,7 +8,7 @@
 
 我习惯称它为 “微型生成器框架”。 这是因为它提供了一种快速生成代码或其他文本文件的便捷方式，同时又保持了很小的体积。我们总是在代码中创建不同的结构和模式，如路由、控制器、组件、工具类等。这些模式会随着时间的变化不断地被改变和优化，所以当你想要去创建一个新的已经存在的模版时，你很难在你的项目/代码中找到对于当前需要创建的模板的最佳实践，这时候就轮到 plop 大展身手了。使用 plop, 你能够随时在项目中更新某种特定代码模式的最佳实践，你只需要在命令行中键入 plop 就能快速地运行代码。这不仅能避免从整个代码库中寻找最佳模板然后复制的过程，而且又能正确高效地创建文件。
 
-如果你看过 plop 的源代码，它其实就是基于 [inquirer](https://github.com/SBoudrias/Inquirer.js/)对话框 和 [hanldebar](https://github.com/handlebars-lang/handlebars.js)模版 的简单融合。
+如果你看过 plop 的源代码，它其实就是基于 [inquirer](https://github.com/SBoudrias/Inquirer.js/) 对话框 和 [handlebars](https://github.com/handlebars-lang/handlebars.js) 模版 的简单融合。
 
 > 此文档还在完善中。如果你有好的想法，我将非常乐于倾听。
 
